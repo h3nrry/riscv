@@ -171,5 +171,3 @@ With many speculative calls in flight, a single RAS pointer isn't enough — OoO
 - **FTQ depth**: sized so fetch can run tens of cycles ahead of dispatch — deep enough to hide typical branch resolution + redirect latency.
 
 ---
-
-If you'd like, I can go a level deeper on any one piece — e.g. a cycle-accurate pipeline diagram for a specific design (say, a 4-wide OoO core), the TAGE predictor internals, or RTL/microarchitectural pseudocode for the RAS checkpoint mechanism.
