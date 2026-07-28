@@ -4,13 +4,19 @@
 
 **Goal**: issue N instructions/cycle, execute in program order, no speculation beyond simple branch prediction.
 
-### Pipeline stages (example: dual-issue, 7-stage)
+### Pipeline stages (example: dual-issue, 8-stage)
 
 ```
-IF1 | IF2 | ID/DE | RN | ISS | EX | WB
+IF0 | IF1 | IF2 | ID/DE | RN | ISS | EX | WB
 ```
 
-- **IF1/IF2**: Fetch up to N instructions per cycle from I-cache (need a wide fetch port, aligned to fetch-group boundaries — tricky with RVC 16-bit compressed instructions since instruction boundaries aren't aligned).
+Note: real designs split fetch into 3-4 stages, not 2 — e.g. BOOM uses F0-F3 and XiangShan uses IF1-IF4, because three separate latencies each want their own pipeline register at high clock frequency:
+
+- **IF0 (PC gen / request)**: drive the fetch PC to the I-cache and BTB.
+- **IF1 (cache/BTB access)**: the I-cache and BTB SRAM access itself, often 1-2 cycles by itself at high frequency; branch-predictor index hashing also happens here.
+- **IF2 (predecode / realign)**: walk the raw fetched bytes to mark instruction boundaries and expand compressed (RVC) instructions — this can't happen in the same cycle as the cache access that produced the bytes, since it needs the returned data first. This is also typically where results merge with the tail bits of the previous fetch packet (to handle instructions straddling a fetch-group boundary) before enqueuing into the fetch buffer.
+
+Higher-performance cores often add a 4th fetch stage to pipeline the branch predictor itself (e.g. a TAGE-style predictor's index-hash → table-access → tag-compare chain doesn't fit in one cycle), decoupled from fetch via a Fetch Target Queue (FTQ) so prediction latency doesn't stall raw fetch bandwidth.
 - **ID/Decode**: Decode N instructions in parallel; expand compressed instructions to 32-bit equivalents.
 - **RN (Rename)**: Even in-order machines often still rename to avoid false WAW/WAR hazards across the N-wide slots, or you handle this with strict in-order scoreboard hazard checks instead.
 - **ISS (Issue/Dispatch)**: Check structural hazards (enough functional units), check register hazards (scoreboard bits), enforce **in-order issue** — if instruction 0 stalls, instruction 1 also stalls even if its operands are ready (this is the defining trait vs OoO).
@@ -39,13 +45,14 @@ IF1 | IF2 | ID/DE | RN | ISS | EX | WB
 ### Classic Tomasulo-style pipeline (like BOOM — Berkeley Out-of-Order Machine)
 
 ```
-IF | ID | RENAME | DISPATCH | ISSUE (out of order) | EX | WB | COMMIT/ROB
+IF0-IF3 (multi-stage frontend) | ID | RENAME | DISPATCH | ISSUE (out of order) | EX | WB | COMMIT/ROB
 ```
 
 ### Core structures you need to design
 
 1. **Fetch + Branch Predictor**
-   - BTB, RAS (return address stack) for `jalr`/function returns, direction predictor (gshare/TAGE), often with a decoupled fetch queue (FTQ) to hide predictor latency.
+   - The frontend itself is typically 3-4 pipeline stages (see the in-order section above for why): PC generation, I-cache/BTB access, and predecode/realignment are each hard to fit in one cycle at high frequency.
+   - BTB, RAS (return address stack) for `jalr`/function returns, direction predictor (gshare/TAGE) — TAGE in particular is often pipelined across 2-3 of its own sub-stages (index hash → table access → tag compare), decoupled from raw fetch via a Fetch Target Queue (FTQ) so predictor latency doesn't stall fetch bandwidth. XiangShan's frontend, for example, spreads branch prediction across IF2-IF4 (labeled BP1-BP3) for exactly this reason.
 
 2. **Rename stage**
    - Map RISC-V architectural registers (x0–x31, f0–f31) to a larger physical register file (PRF) using a Register Alias Table (RAT).
