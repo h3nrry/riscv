@@ -1096,7 +1096,19 @@ endmodule
 |---|---|---|---|---|
 | 0 | `rst_n = 0` | `v: 4'b0000`<br>`pri: [x, x, x, x]`<br>`data: [x, x, x, x]` | `valid = 0`<br>`best_idx = 0`<br>`data_out = x` | `empty = 1`<br>`full = 0` |
 | 1 | `insert = 1`<br>`pri_in = 5`<br>`data_in = 8'hAA`<br>`dequeue = 0` | Slot 0 filled:<br>`v: 4'b0001`<br>`pri: [5, x, x, x]`<br>`data: [AA, x, x, x]` | `valid = 1`<br>`best_idx = 0`<br>`data_out = 8'hAA` | `empty = 0`<br>`full = 0` |
-| 2 |
+| 2 | `insert = 1`<br>`pri_in = 9`<br>`data_in = 8'hBB`<br>`dequeue = 0` | Slot 1 filled:<br>`v: 4'b0011`<br>`pri: [5, 9, x, x]`<br>`data: [AA, BB, x, x]` | `valid = 1`<br>`best_idx = 1` (pri 9 > 5)<br>`data_out = 8'hBB` | `empty = 0`<br>`full = 0` |
+| 3 | `insert = 1`<br>`pri_in = 2`<br>`data_in = 8'hCC`<br>`dequeue = 0` | Slot 2 filled:<br>`v: 4'b0111`<br>`pri: [5, 9, 2, x]`<br>`data: [AA, BB, CC, x]` | `valid = 1`<br>`best_idx = 1` (pri 9 is max)<br>`data_out = 8'hBB` | `empty = 0`<br>`full = 0` |
+| 4 | `insert = 0`<br>`dequeue = 1` | Slot 1 dequeued (`v[1] <= 0`):<br>`v: 4'b0101`<br>`pri: [5, 9, 2, x]`<br>`data: [AA, BB, CC, x]` | `valid = 1`<br>`best_idx = 0` (pri 5 > 2)<br>`data_out = 8'hAA` | `empty = 0`<br>`full = 0` |
+| 5 | `insert = 1`<br>`pri_in = 9`<br>`data_in = 8'hDD`<br>`dequeue = 0` | First free slot (Slot 1) reused:<br>`v: 4'b0111`<br>`pri: [5, 9, 2, x]`<br>`data: [AA, DD, CC, x]` | `valid = 1`<br>`best_idx = 1` (pri 9 > 5)<br>`data_out = 8'hDD` | `empty = 0`<br>`full = 0` |
+| 6 | `insert = 0`<br>`dequeue = 1` | Slot 1 dequeued (`v[1] <= 0`):<br>`v: 4'b0101`<br>`pri: [5, 9, 2, x]`<br>`data: [AA, DD, CC, x]` | `valid = 1`<br>`best_idx = 0` (pri 5 > 2)<br>`data_out = 8'hAA` | `empty = 0`<br>`full = 0` |
+| 7 | `insert = 0`<br>`dequeue = 1` | Slot 0 dequeued (`v[0] <= 0`):<br>`v: 4'b0100`<br>`pri: [5, 9, 2, x]`<br>`data: [AA, DD, CC, x]` | `valid = 1`<br>`best_idx = 2` (only valid item left)<br>`data_out = 8'hCC` | `empty = 0`<br>`full = 0` |
+| 8 | `insert = 0`<br>`dequeue = 1` | Slot 2 dequeued (`v[2] <= 0`):<br>`v: 4'b0000`<br>`pri: [5, 9, 2, x]`<br>`data: [AA, DD, CC, x]` | `valid = 0`<br>`best_idx = 0`<br>`data_out = 8'h55` (Invalid) | `empty = 1`<br>`full = 0` |
+
+## Highlights of Key Behaviors Shown
+
+- **Out-of-Order Dequeue (Cycle 4):** Even though `8'hAA` was entered first, `8'hBB` was dequeued first because its priority score (9) was higher than `8'hAA` (5).
+- **First-Free Slot Reuse (Cycle 5):** When `8'hDD` was inserted, the loop found slot index 1 empty (`!v[1]`) and placed the new entry there immediately instead of at the end of the array.
+- **Zero-Latency Evaluation:** As soon as internal registers update on a clock edge, `best_idx` and `data_out` update combinationally in the same cycle.
 
 **35. Skid Buffer (1-Entry Elastic Buffer)** — *(Medium)*
 ```systemverilog
