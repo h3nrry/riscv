@@ -911,6 +911,21 @@ module dual_resource_arb #(parameter int N = 8, parameter int F = 4, parameter i
     end
 endmodule
 ```
+### Example Scenario
+
+Suppose `N = 8`, `F = 4`, and `W = 2`:
+
+- `req = 8'b1111_1111` (All 8 agents are requesting)
+
+| Loop Iteration (i) | `req[i]` | `fu_used` (Limit F=4) | `wp_used` (Limit W=2) | Decision | Action Taken |
+|---|---|---|---|---|---|
+| 0 | 1 | 0 < 4 (Pass) | 0 < 2 (Pass) | `grant[0] = 1` | `fu_used → 1`, `wp_used → 1` |
+| 1 | 1 | 1 < 4 (Pass) | 1 < 2 (Pass) | `grant[1] = 1` | `fu_used → 2`, `wp_used → 2` |
+| 2 | 1 | 2 < 4 (Pass) | 2 < 2 (FAIL) | `grant[2] = 0` | Resource W exhausted! |
+| 3 | 1 | 2 < 4 (Pass) | 2 < 2 (FAIL) | `grant[3] = 0` | Blocked by W |
+| ... | ... | ... | ... | `grant[4..7] = 0` | Blocked by W |
+
+**Final Output:** `grant = 8'b0000_0011` (Only agents 0 and 1 receive grants).
 
 ---
 
