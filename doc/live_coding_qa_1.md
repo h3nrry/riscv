@@ -122,6 +122,54 @@ function automatic logic [15:0] bin2gray(input logic [15:0] bin);
     return bin ^ (bin >> 1);
 endfunction
 
+# Proof of `bin2gray` (explicit `for`-loop form, 8-bit)
+
+The one-liner `gray = bin ^ (bin >> 1)` can be written out as an explicit bit-by-bit loop, structured as the mirror image of `gray2bin`'s reconstruction loop:
+
+```systemverilog
+function automatic logic [7:0] bin2gray(input logic [7:0] bin);
+    logic [7:0] gray;
+    gray[7] = bin[7];                          // MSB passes through unchanged
+    for (int i = 6; i >= 0; i--)
+        gray[i] = bin[i] ^ bin[i+1];
+    return gray;
+endfunction
+```
+
+**8-bit bit-level derivation table:**
+
+| Bit index `i` | `g[i] = b[i] ⊕ b[i+1]` (`b[8] = 0`) |
+|---|---|
+| 7 (MSB) | `g[7] = b[7] ⊕ b[8](=0) = b[7]` |
+| 6 | `g[6] = b[6] ⊕ b[7]` |
+| 5 | `g[5] = b[5] ⊕ b[6]` |
+| 4 | `g[4] = b[4] ⊕ b[5]` |
+| 3 | `g[3] = b[3] ⊕ b[4]` |
+| 2 | `g[2] = b[2] ⊕ b[3]` |
+| 1 | `g[1] = b[1] ⊕ b[2]` |
+| 0 (LSB) | `g[0] = b[0] ⊕ b[1]` |
+
+Row `i=7` is the base assignment outside the loop; rows `i=6` down to `i=0` are exactly the 7 loop iterations, each depending on the neighbor one bit above it — which is why the loop must run MSB-to-LSB (`i=6; i>=0; i--`), the same direction as `gray2bin`'s reconstruction loop.
+
+**Worked example:** `bin = 8'b1011_0110` (`0xB6` = 182 decimal)
+
+| Step | `i` | `bin[i]` | `bin[i+1]` | Computation | `gray[i]` |
+|---|---|---|---|---|---|
+| base case | 7 | 1 | — (`b[8]=0`) | `gray[7] = bin[7]` | **1** |
+| iter 1 | 6 | 0 | 1 | `0 ⊕ 1` | **1** |
+| iter 2 | 5 | 1 | 0 | `1 ⊕ 0` | **1** |
+| iter 3 | 4 | 1 | 1 | `1 ⊕ 1` | **0** |
+| iter 4 | 3 | 0 | 1 | `0 ⊕ 1` | **1** |
+| iter 5 | 2 | 1 | 0 | `1 ⊕ 0` | **1** |
+| iter 6 | 1 | 1 | 1 | `1 ⊕ 1` | **0** |
+| iter 7 | 0 | 0 | 1 | `0 ⊕ 1` | **1** |
+
+Reading `gray[7:0]` off the last column: **`gray = 8'b1110_1101`** (`0xED` = 237 decimal).
+
+Cross-check against the one-liner: `bin ^ (bin >> 1) = 8'b1011_0110 ^ 8'b0101_1011 = 8'b1110_1101` — matches exactly.
+
+By the induction proof in `gray_code_proof.md` (Section 2), feeding this `gray` value back through `gray2bin` reconstructs `8'b1011_0110` exactly, bit by bit, from MSB down to LSB.
+
 function automatic logic [15:0] gray2bin(input logic [15:0] gray);
     logic [15:0] bin;
     bin[15] = gray[15];
