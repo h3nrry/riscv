@@ -586,6 +586,17 @@ module fixed_pri_arb #(parameter int WIDTH = 8) (
 endmodule
 ```
 
+Prove:
+req     =  8'b1011_0100   (Active requests at bits 2, 4, 5, 7)
+-------------------------
+ ~req     =  8'b0100_1011   (Invert all bits of req)
++ 1'b1    =  8'b0000_0001   (Add 1 to create 2's complement)
+-------------------------
+ -req     =  8'b0100_1100   (Resulting -req: carry rippled up to bit 2)
+& req     =  8'b1011_0100   (Bitwise AND with original req)
+-------------------------
+  grant   =  8'b0000_0100   (Only Bit 2 remains 1)
+
 ```systemverilog
 module fixed_pri_arb_msb #(parameter int WIDTH = 8) (
     input  logic [WIDTH-1:0] req,
