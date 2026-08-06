@@ -878,6 +878,22 @@ module oldest_select #(parameter int N = 8, parameter int AGE_W = 5) (
 endmodule
 ```
 
+### Example Trace
+
+Consider `N = 4` and `AGE_W = 4`:
+
+- `ready = 4'b1011` (Entries 0, 1, and 3 are valid)
+- `age[0] = 8`, `age[1] = 3`, `age[2] = 1`, `age[3] = 3`
+
+| Loop Index (i) | `ready[i]` | `age[i]` | Condition Check | `best` Updated To | Reason |
+|---|---|---|---|---|---|
+| 0 | 1 | 8 | `best == -1` | 0 | First valid candidate found |
+| 1 | 1 | 3 | `age[1] < age[0]` (3 < 8) | 1 | Entry 1 is older than Entry 0 |
+| 2 | 0 | 1 | `ready[2] == 0` | 1 | Skipped because Entry 2 is not ready |
+| 3 | 1 | 3 | `age[3] < age[1]` (3 < 3 → False) | 1 | Tied with Entry 1; lower index (1) wins |
+
+**Final Output:** `sel = 4'b0010` (Entry 1 is selected).
+
 **30. Dual-Resource Arbiter (Functional Unit + Write Port)** — *(Hard)*
 ```systemverilog
 module dual_resource_arb #(parameter int N = 8, parameter int F = 4, parameter int W = 2) (
