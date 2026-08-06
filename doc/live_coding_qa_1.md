@@ -123,7 +123,7 @@ function automatic logic [15:0] bin2gray(input logic [15:0] bin);
 endfunction
 ```
 
-***7.1 Proof of `bin2gray` (explicit `for`-loop form, 8-bit)
+**7.1 Proof of `bin2gray` (explicit `for`-loop form, 8-bit)
 
 The one-liner `gray = bin ^ (bin >> 1)` can be written out as an explicit bit-by-bit loop, structured as the mirror image of `gray2bin`'s reconstruction loop:
 
