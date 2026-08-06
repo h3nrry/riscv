@@ -585,17 +585,17 @@ module fixed_pri_arb #(parameter int WIDTH = 8) (
     assign grant = req & (~req + 1'b1);
 endmodule
 ```
+### Priority Encoder: Isolating the Lowest Set Bit (`grant = req & (-req)`)
 
-Prove:
-req     =  8'b1011_0100   (Active requests at bits 2, 4, 5, 7)
--------------------------
- ~req     =  8'b0100_1011   (Invert all bits of req)
-+ 1'b1    =  8'b0000_0001   (Add 1 to create 2's complement)
--------------------------
- -req     =  8'b0100_1100   (Resulting -req: carry rippled up to bit 2)
-& req     =  8'b1011_0100   (Bitwise AND with original req)
--------------------------
-  grant   =  8'b0000_0100   (Only Bit 2 remains 1)
+**Input:** `req = 8'b1011_0100` (Active requests at bits 2, 4, 5, 7)
+
+| Step | Expression | Value | Description |
+|---|---|---|---|
+| 1 | `~req` | `8'b0100_1011` | Invert all bits of `req` |
+| 2 | `+ 1'b1` | `8'b0000_0001` | Add 1 to create 2's complement |
+| 3 | `-req` | `8'b0100_1100` | Resulting `-req` (carry ripples up to bit 2) |
+| 4 | `& req` | `8'b1011_0100` | Bitwise AND with original `req` |
+| 5 | `grant` | `8'b0000_0100` | Only bit 2 remains 1 |
 
 ```systemverilog
 module fixed_pri_arb_msb #(parameter int WIDTH = 8) (
