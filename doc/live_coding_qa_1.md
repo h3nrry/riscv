@@ -1141,6 +1141,13 @@ module skid_buffer #(parameter int WIDTH = 32) (
 endmodule
 ```
 
+## Cycle-by-Cycle Execution Trace
+
+| Cycle | `up_valid` | `down_ready` | `up_ready` | `down_valid` | `down_data` | `skid_valid` | Event / Explanation |
+|---|---|---|---|---|---|---|---|
+| 1 | 1 | 1 | 1 | 1 | `up_data` | 0 | **Pass-Through:** Data flows directly through bypass path. |
+| 2 | 1 | 0 | 1 | 1 | `up_data` | 0 | **Skid Occurs:** Downstream stalls (`down_ready=0`), but upstream completes
+
 **36. FWFT Wrapper Around a Non-FWFT FIFO** — *(Medium-Hard)*
 ```systemverilog
 module fwft_wrapper #(parameter int WIDTH = 32) (
