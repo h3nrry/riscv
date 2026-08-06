@@ -1084,6 +1084,20 @@ module small_pri_queue #(parameter int N = 8, parameter int PBITS = 4, parameter
 endmodule
 ```
 
+## Execution Scenario Setup
+
+**Parameters:** `N = 4` (Capacity of 4), `PBITS = 4`, `DBITS = 8`
+
+**Initial State:** Reset applied (`v = 4'b0000`, queue is empty)
+
+## Step-by-Step Cycle Trace Table
+
+| Cycle | Input Signals | Internal Registers (`v`, `pri`, `data`) | Combinational Outputs (`valid`, `best_idx`, `data_out`) | Queue Status |
+|---|---|---|---|---|
+| 0 | `rst_n = 0` | `v: 4'b0000`<br>`pri: [x, x, x, x]`<br>`data: [x, x, x, x]` | `valid = 0`<br>`best_idx = 0`<br>`data_out = x` | `empty = 1`<br>`full = 0` |
+| 1 | `insert = 1`<br>`pri_in = 5`<br>`data_in = 8'hAA`<br>`dequeue = 0` | Slot 0 filled:<br>`v: 4'b0001`<br>`pri: [5, x, x, x]`<br>`data: [AA, x, x, x]` | `valid = 1`<br>`best_idx = 0`<br>`data_out = 8'hAA` | `empty = 0`<br>`full = 0` |
+| 2 |
+
 **35. Skid Buffer (1-Entry Elastic Buffer)** — *(Medium)*
 ```systemverilog
 module skid_buffer #(parameter int WIDTH = 32) (
