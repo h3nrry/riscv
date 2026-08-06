@@ -586,6 +586,46 @@ module fixed_pri_arb #(parameter int WIDTH = 8) (
 endmodule
 ```
 
+```systemverilog
+module fixed_pri_arb_msb #(parameter int WIDTH = 8) (
+    input  logic [WIDTH-1:0] req,
+    output logic [WIDTH-1:0] grant
+);
+    logic [WIDTH-1:0] req_rev, grant_rev;
+
+    // 1. Reverse the request vector
+    assign req_rev   = {<<{req}};
+
+    // 2. Isolate the lowest bit on the reversed vector (which was the MSB)
+    assign grant_rev = req_rev & (~req_rev + 1'b1);
+
+    // 3. Reverse back to original order
+    assign grant     = {<<{grant_rev}};
+endmodule
+```
+
+```systemverilog
+module fixed_pri_arb_msb #(parameter int WIDTH = 8) (
+    input  logic [WIDTH-1:0] req,
+    output logic [WIDTH-1:0] grant
+);
+    logic [WIDTH-1:0] highest_req;
+
+    always_comb begin
+        highest_req[WIDTH-1] = 1'b0; // MSB has no bits above it
+        
+        // Scan top-down: once a 1 is seen, block all lower bits
+        for (int i = WIDTH-2; i >= 0; i--) begin
+            highest_req[i] = highest_req[i+1] | req[i+1];
+        end
+    end
+
+    // Grant is active only where req is 1 and no higher bit is set
+    assign grant = req & ~highest_req;
+endmodule
+```
+
+
 **22. Matrix (Age-Based) Arbiter** — *(Hard)*
 ```systemverilog
 module matrix_arb #(parameter int N = 4) (
