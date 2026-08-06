@@ -171,6 +171,7 @@ Cross-check against the one-liner: `bin ^ (bin >> 1) = 8'b1011_0110 ^ 8'b0101_10
 
 By the induction proof in `gray_code_proof.md` (Section 2), feeding this `gray` value back through `gray2bin` reconstructs `8'b1011_0110` exactly, bit by bit, from MSB down to LSB.
 
+```systemverilog
 function automatic logic [15:0] gray2bin(input logic [15:0] gray);
     logic [15:0] bin;
     bin[15] = gray[15];
