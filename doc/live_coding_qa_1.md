@@ -1146,7 +1146,16 @@ endmodule
 | Cycle | `up_valid` | `down_ready` | `up_ready` | `down_valid` | `down_data` | `skid_valid` | Event / Explanation |
 |---|---|---|---|---|---|---|---|
 | 1 | 1 | 1 | 1 | 1 | `up_data` | 0 | **Pass-Through:** Data flows directly through bypass path. |
-| 2 | 1 | 0 | 1 | 1 | `up_data` | 0 | **Skid Occurs:** Downstream stalls (`down_ready=0`), but upstream completes
+| 2 | 1 | 0 | 1 | 1 | `up_data` | 0 | **Skid Occurs:** Downstream stalls (`down_ready=0`), but upstream completes transfer (`up_valid & up_ready = 1`). Data enters `skid_data`. |
+| 3 | 1 | 0 | 0 | 1 | `skid_data` | 1 | **Stalled / Skidded:** `up_ready` drops to 0 to stop upstream. `down_data` is driven from `skid_data`. |
+| 4 | 1 | 1 | 0 | 1 | `skid_data` | 1 | **Drain:** Downstream consumes `skid_data`. `skid_valid` will clear at next clock edge. |
+| 5 | 1 | 1 | 1 | 1 | `up_data` | 0 | **Resumed:** `skid_valid` is 0. Normal bypass mode continues without missing a beat. |
+
+## Summary of Benefits
+
+- **Timing Isolation:** `up_ready` is driven strictly by the local `skid_valid` flip-flop, cutting the combinational timing path from `down_ready`.
+- **Zero Latency:** In normal operation (`skid_valid == 0`), data is not delayed by a clock cycle.
+- **Full Throughput:** No bubbles are inserted during backpressure stall/resume transitions.
 
 **36. FWFT Wrapper Around a Non-FWFT FIFO** — *(Medium-Hard)*
 ```systemverilog
