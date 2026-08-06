@@ -121,6 +121,7 @@ endmodule
 function automatic logic [15:0] bin2gray(input logic [15:0] bin);
     return bin ^ (bin >> 1);
 endfunction
+```
 
 # Proof of `bin2gray` (explicit `for`-loop form, 8-bit)
 
