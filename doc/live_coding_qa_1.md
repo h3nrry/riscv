@@ -854,6 +854,13 @@ module bank_conflict_arb #(parameter int N = 4, parameter int BANKS = 4) (
 endmodule
 ```
 
+| Loop Iteration (i) | Agent Target | `bank_taken` Status | Decision | Final `bank_taken` |
+|---|---|---|---|---|
+| i = 0 | Bank 2 | Bank 2 is free (0) | `grant[0] = 1` | `4'b0100` (Bank 2 locked) |
+| i = 1 | Bank 2 | Bank 2 is taken (1) | `grant[1] = 0` (Conflict!) | `4'b0100` |
+| i = 2 | Bank 0 | Bank 0 is free (0) | `grant[2] = 1` | `4'b0101` (Banks 0, 2 locked) |
+| i = 3 | Bank 2 | Bank 2 is taken (1) | `grant[3] = 0` (Conflict!) | `4'b0101` |
+
 **29. Age-Based Oldest-First Select** — *(Hard)*
 ```systemverilog
 module oldest_select #(parameter int N = 8, parameter int AGE_W = 5) (
