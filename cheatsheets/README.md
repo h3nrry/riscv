@@ -14,6 +14,7 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
 | [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) | C extension — `inst[1:0] = 00 / 01 / 10` compressed instruction encodings |
 | [`rv_privileged_Smepmp_isa_cheatsheet.md`](./rv_privileged_Smepmp_isa_cheatsheet.md) | Smepmp extension — PMP CSRs, address matching modes, `mseccfg` (MML/MMWP/RLB) access rules |
 | [`rv_privileged_machine_level_isa_cheatsheet.md`](./rv_privileged_machine_level_isa_cheatsheet.md) | Machine-Level ISA — CSR address map, `misa`, `mstatus`, `mtvec`, trap delegation, `mip`/`mie`, `mcause` code table, trap handling flow |
+| [`firmware/`](./firmware) (`boot.S`, `main.c`, `linker.ld`, `Makefile`, `build.sh`) | Sample bare-metal firmware project — see [Sample Firmware](#sample-firmware-boots--mainc) below |
 
 Other privileged-architecture cheatsheets (virtual memory, hypervisor, etc.) are not yet written — the extension list below is a reference/roadmap for when those are added.
 
@@ -201,6 +202,42 @@ _start:
 riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 -nostartfiles -o test.elf test.S
 riscv-none-elf-objdump -d test.elf
 ```
+
+### Sample Firmware (boot.S + main.c)
+
+A slightly fuller startup than the pattern above, kept as a self-contained, extensible project in [`firmware/`](./firmware) — `main.c` is the intended entry point to grow into real application logic (interrupt handlers, drivers, etc.), while `boot.S`/`linker.ld` stay fixed as the startup plumbing underneath it:
+
+| File | Role |
+|---|---|
+| [`firmware/boot.S`](./firmware/boot.S) | Clears all GPRs, sets up the stack, installs the trap vector (`mtvec`), opens PMP entry 0 to the full address space, clears stale `mip`/`mie`, then calls `main()` |
+| [`firmware/main.c`](./firmware/main.c) | Entry point for real firmware logic; currently just waits in `wfi` — no interrupts are enabled yet |
+| [`firmware/linker.ld`](./firmware/linker.ld) | Loader script: defines the `RAM` memory region and the section-placement table (`.text.init`/`.text`/`.rodata`/`.data`/`.bss`/heap/stack), including the `_stack_top` symbol `boot.S` depends on |
+| [`firmware/Makefile`](./firmware/Makefile) | Builds `boot.S` + `main.c` against `linker.ld` into `boot.elf`, plus `disasm`/`hex`/`bin`/`size`/`clean` targets |
+| [`firmware/build.sh`](./firmware/build.sh) | Runs the Makefile end-to-end (clean → build → disasm → size) |
+
+See [Machine-Level ISA cheatsheet → Trap Handling Flow](./rv_privileged_machine_level_isa_cheatsheet.md#trap-handling-flow) and the [Smepmp cheatsheet](./rv_privileged_Smepmp_isa_cheatsheet.md) for what each CSR write in `boot.S` does.
+
+To build and run:
+
+```bash
+cd firmware
+chmod +x build.sh
+./build.sh                  # defaults to rv32imc / ilp32
+./build.sh rv64imac lp64    # or override march/mabi
+```
+
+Equivalent to running `make` directly:
+
+```bash
+make clean
+make                # -> boot.elf
+make disasm         # -> disassembly via objdump
+make hex            # -> boot.hex (Intel HEX, for sim memory init)
+make bin            # -> boot.bin (raw binary)
+make size            # -> section size summary
+```
+
+`ORIGIN`/`LENGTH` in `linker.ld` default to a 64 KiB RAM at `0x80000000` — adjust to match your actual target platform before flashing/simulating.
 
 ---
 
