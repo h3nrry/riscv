@@ -6,6 +6,24 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
 
 ---
 
+## Table of Contents
+
+- [Files in this folder](#files-in-this-folder)
+- [Unprivileged ISA — Volume I](#unprivileged-isa--volume-i)
+- [Privileged Architecture — Volume II](#privileged-architecture--volume-ii)
+  - [Virtual memory (Sv*) — latest support](#virtual-memory-sv--latest-support)
+- [Extensions, Toolchain & Build Reference](#extensions-toolchain--build-reference)
+  - [Common Extensions (reflexrv-relevant)](#common-extensions-reflexrv-relevant)
+  - [ABI / Width Naming](#abi--width-naming)
+  - [GCC Compile Flags](#gcc-compile-flags)
+  - [Binutils — Inspecting Output](#binutils--inspecting-output)
+  - [GDB (with Spike or your simulator as target)](#gdb-with-spike-or-your-simulator-as-target)
+  - [Minimal Bare-Metal Test Pattern](#minimal-bare-metal-test-pattern)
+  - [Sample Firmware (boot.S + main.c)](#sample-firmware-boots--mainc)
+- [Spec Sources](#spec-sources)
+
+---
+
 ## Files in this folder
 
 | File | Covers |
