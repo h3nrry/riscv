@@ -18,6 +18,7 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
   - [GCC Compile Flags](#gcc-compile-flags)
   - [Binutils — Inspecting Output](#binutils--inspecting-output)
   - [GDB (with Spike or your simulator as target)](#gdb-with-spike-or-your-simulator-as-target)
+  - [Simulators (Spike / gem5)](#simulators-spike--gem5)
   - [Minimal Bare-Metal Test Pattern](#minimal-bare-metal-test-pattern)
   - [Sample Firmware (boot.S + main.c)](#sample-firmware-boots--mainc)
 - [Spec Sources](#spec-sources)
@@ -33,6 +34,7 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
 | [`rv_privileged_Smepmp_isa_cheatsheet.md`](./rv_privileged_Smepmp_isa_cheatsheet.md) | Smepmp extension — PMP CSRs, address matching modes, `mseccfg` (MML/MMWP/RLB) access rules |
 | [`rv_privileged_machine_level_isa_cheatsheet.md`](./rv_privileged_machine_level_isa_cheatsheet.md) | Machine-Level ISA — CSR address map, `misa`, `mstatus`, `mtvec`, trap delegation, `mip`/`mie`, `mcause` code table, trap handling flow |
 | [`firmware/`](./firmware) (`boot.S`, `main.c`, `linker.ld`, `Makefile`, `build.sh`) | Sample bare-metal firmware project — see [Sample Firmware](#sample-firmware-boots--mainc) below |
+| [`toolchain.md`](./toolchain.md) | Full RISC-V GNU toolchain setup: prebuilt vs. source build, GCC vs. LLVM/Clang, environment setup and verification |
 
 Other privileged-architecture cheatsheets (virtual memory, hypervisor, etc.) are not yet written — the extension list below is a reference/roadmap for when those are added.
 
@@ -124,7 +126,7 @@ Address-translation schemes and their supporting extensions, defined within the 
 
 ## Extensions, Toolchain & Build Reference
 
-Moved here from `rv_unprivileged_base_isa_cheatsheet.md` so that file stays scoped to the base ISA only.
+Moved here from `rv_unprivileged_base_isa_cheatsheet.md` so that file stays scoped to the base ISA only. For full step-by-step toolchain installation (prebuilt vs. building from source, GCC vs. LLVM/Clang, environment setup and verification), see [`toolchain.md`](./toolchain.md) — the summary below assumes a toolchain is already installed and on `PATH`.
 
 ### Common Extensions (reflexrv-relevant)
 
@@ -192,16 +194,55 @@ riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 --print-multi-lib
 
 ### GDB (with Spike or your simulator as target)
 
+GDB itself doesn't execute RISC-V code — it's a front-end that drives a remote target over the GDB Remote Serial Protocol. The target is whatever actually runs the instructions: Spike (`-g`/`--gdb`), gem5 (its own remote-gdb port), QEMU (`-gdb tcp::PORT -S`), or real hardware via OpenOCD/JTAG. Always use the `*-gdb` binary from the **same toolchain install** you compiled with, so its notion of registers/ABI matches the ELF (e.g. `riscv-none-elf-gdb` for an xPack toolchain, `riscv64-unknown-elf-gdb` for a `riscv-gnu-toolchain` build — see [`toolchain.md`](./toolchain.md)).
+
 ```bash
 riscv-none-elf-gdb out.elf
-(gdb) target remote :1234       # connect to simulator/gdbserver
+(gdb) target remote :1234       # connect to simulator/gdbserver (Spike's -g defaults to :9824)
 (gdb) break main
 (gdb) continue
-(gdb) stepi                      # single instruction step
-(gdb) info registers
-(gdb) x/10i $pc                  # examine next 10 instructions at pc
-(gdb) x/4xw $sp                  # examine 4 words at stack pointer, hex
 ```
+
+Common commands once connected:
+
+| Command | Meaning |
+|---|---|
+| `target remote :PORT` | Attach to a remote gdbserver — Spike's `-g` listens on `:9824` by default; QEMU/OpenOCD are commonly `:1234` |
+| `break <symbol>` / `break *0xADDR` | Set a breakpoint by symbol name or raw address |
+| `continue` (`c`) | Resume execution until the next breakpoint/trap |
+| `stepi` (`si`) / `nexti` (`ni`) | Single-step one instruction, stepping into vs. over calls |
+| `info registers` | Dump all GPRs + `pc` |
+| `print $mstatus` | Inspect a CSR by name, if the target's gdbstub exposes CSRs (support varies by simulator/OpenOCD config) |
+| `x/10i $pc` | Disassemble the next 10 instructions at `pc` |
+| `x/4xw $sp` | Examine 4 words at the stack pointer, in hex |
+| `watch <expr>` | Set a watchpoint that stops execution when a variable/memory location changes |
+| `layout asm` / `layout regs` | Split-pane TUI views for assembly / registers (`Ctrl+X, A` to toggle TUI) |
+| `disconnect` | Detach from the remote target without killing it |
+
+### Simulators (Spike / gem5)
+
+| Simulator | Role |
+|---|---|
+| **Spike** ([`riscv-isa-sim`](https://github.com/riscv-software-src/riscv-isa-sim)) | Official RISC-V golden/reference functional simulator — the ISA's "ground truth" for correctness testing; what `riscv-arch-test`/`riscv-tests` are signed off against |
+| **[gem5](https://www.gem5.org/)** | Cycle-accurate, configurable computer-architecture simulator with RISC-V ISA support — used for performance/microarchitecture modeling rather than pure ISA compliance |
+
+```bash
+# Spike — run an ELF directly
+spike --isa=rv32imc pk test.elf        # with the RISC-V proxy kernel (Linux-style syscalls)
+spike --isa=rv32imc -m 0x80000000:0x10000 test.elf   # bare-metal, no pk, explicit memory map
+
+# Spike + GDB (matches the "GDB" section above)
+spike --isa=rv32imc -m 0x80000000:0x10000 -g test.elf &
+riscv-none-elf-gdb test.elf -ex "target remote :9824"
+```
+
+```bash
+# gem5 — minimal RISC-V bare-metal / syscall-emulation (SE) run, from a gem5 checkout
+scons build/RISCV/gem5.opt -j"$(nproc)"
+./build/RISCV/gem5.opt configs/example/se.py --cpu-type=TimingSimpleCPU -c test.elf
+```
+
+Spike is the right first stop for pure ISA-correctness checks (does the decoder/ALU produce the architecturally correct result); gem5 is the right tool once cycle counts, cache behavior, or pipeline timing matter.
 
 ### Minimal Bare-Metal Test Pattern
 
@@ -267,6 +308,8 @@ make size            # -> section size summary
 - [RISC-V ABI spec](https://github.com/riscv-non-isa/riscv-elf-psabi-doc)
 - [riscv-tests](https://github.com/riscv-software-src/riscv-tests)
 - [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test)
+- [Spike (riscv-isa-sim)](https://github.com/riscv-software-src/riscv-isa-sim)
+- [gem5](https://www.gem5.org/)
 
 ---
 
