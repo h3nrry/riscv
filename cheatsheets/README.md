@@ -32,6 +32,7 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
 | [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) | RV32I/RV64I base ISA only — registers, instructions, `inst[1:0] = 11` encodings |
 | [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) | C extension — `inst[1:0] = 00 / 01 / 10` compressed instruction encodings |
 | [`rv_privileged_Smepmp_isa_cheatsheet.md`](./rv_privileged_Smepmp_isa_cheatsheet.md) | Smepmp extension — PMP CSRs, address matching modes, `mseccfg` (MML/MMWP/RLB) access rules |
+| [`rv_privileged_csr_isa_cheatsheet.md`](./rv_privileged_csr_isa_cheatsheet.md) | General CSR chapter — 12-bit address encoding, address-range allocation, WPRI/WLRL/WARL conventions, full Unprivileged/Supervisor/Hypervisor/VS/Machine CSR listing |
 | [`rv_privileged_machine_level_isa_cheatsheet.md`](./rv_privileged_machine_level_isa_cheatsheet.md) | Machine-Level ISA — CSR address map, `misa`, `mstatus`, `mtvec`, trap delegation, `mip`/`mie`, `mcause` code table, trap handling flow |
 | [`firmware/`](./firmware) (`boot.S`, `main.c`, `linker.ld`, `Makefile`, `build.sh`) | Sample bare-metal firmware project — see [Sample Firmware](#sample-firmware-boots--mainc) below |
 | [`toolchain.md`](./toolchain.md) | Full RISC-V GNU toolchain setup: prebuilt vs. source build, GCC vs. LLVM/Clang, environment setup and verification |
@@ -87,7 +88,7 @@ Governs machine/supervisor-mode execution: CSRs, traps, interrupts, virtual memo
 
 | Extension | Description | Version | Ratified |
 |---|---|---|---|
-| — | Control and Status Registers (CSRs) | — | — (base spec) |
+| — | **[Control and Status Registers (CSRs)](./rv_privileged_csr_isa_cheatsheet.md)** | — | — (base spec) |
 | **Machine-Level ISA** | **[Machine-mode (M-mode) architecture](./rv_privileged_machine_level_isa_cheatsheet.md)** | 1.13 | Oct 2024 |
 | Smstateen / Ssstateen | State-enable extensions | 1.0 | Nov 2021 |
 | Smcsrind / Sscsrind | Indirect CSR access | 1.0 | Feb 2024 |
