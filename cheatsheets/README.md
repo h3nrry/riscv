@@ -127,7 +127,7 @@ Address-translation schemes and their supporting extensions, defined within the 
 
 ## Extensions, Toolchain & Build Reference
 
-Moved here from `rv_unprivileged_base_isa_cheatsheet.md` so that file stays scoped to the base ISA only. For full step-by-step toolchain installation (prebuilt vs. building from source, GCC vs. LLVM/Clang, environment setup and verification), see [`toolchain.md`](./toolchain.md) — the summary below assumes a toolchain is already installed and on `PATH`.
+Moved here from [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) so that file stays scoped to the base ISA only. For full step-by-step toolchain installation (prebuilt vs. building from source, GCC vs. LLVM/Clang, environment setup and verification), see [`toolchain.md`](./toolchain.md) — the summary below assumes a toolchain is already installed and on `PATH`.
 
 ### Common Extensions (reflexrv-relevant)
 
