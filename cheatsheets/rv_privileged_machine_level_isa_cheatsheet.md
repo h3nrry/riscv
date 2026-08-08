@@ -196,7 +196,7 @@ Bit *i* in `mip`/`mie` corresponds to `mcause` interrupt cause *i*. Bits 15:0 ar
 
 ---
 
-## mcause — Machine Causes
+## mcause — Machine Cause
 
 **Address:** `0x342`. Top bit = Interrupt flag; remaining bits = Exception Code (WLRL).
 
