@@ -1,6 +1,6 @@
 # RISC-V Unprivileged Compressed ISA Cheatsheet
 
-Companion to [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) (the main RISC-V Unprivileged ISA Cheatsheet). This file covers only **`inst[1:0]` = 00 / 01 / 10** — the 16-bit compressed instruction encodings defined by the "C" extension, version 2.0, part of the RISC-V Unprivileged ISA spec (current release [20260120](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html)).
+Companion to [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) (the main RISC-V Unprivileged Base ISA Cheatsheet). This file covers only **`inst[1:0]` = 00 / 01 / 10** — the 16-bit compressed instruction encodings defined by the "C" extension, version 2.0, part of the RISC-V Unprivileged ISA spec (current release [20260120](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html)).
 
 `inst[1:0] = 11` (standard 32-bit+ instructions) is covered in the main cheatsheet's [Official Base Opcode Map](./rv_unprivileged_base_isa_cheatsheet.md#official-base-opcode-map-inst10--11-ie-all-32-bit-instructions).
 
@@ -9,6 +9,7 @@ Companion to [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_i
 ## Table of Contents
 
 - [Quadrant Overview](#quadrant-overview)
+- [Compressed Instruction Set](#compressed-instruction-set)
 - [Compressed Opcode Map](#compressed-opcode-map)
 - [Format Bit Layouts](#format-bit-layouts)
 - [Quadrant / funct3 Instruction Map](#quadrant--funct3-instruction-map)
@@ -29,6 +30,86 @@ Companion to [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_i
 Within each quadrant, `funct3` (bits [15:13]) further selects the actual instruction — see the [Quadrant / funct3 Instruction Map](#quadrant--funct3-instruction-map) below.
 
 `rd'`/`rs1'`/`rs2'` are **3-bit** register fields — they only address `x8`–`x15` (`s0`–`a5`), which is why not every register works with every compressed instruction. Plain `rd`/`rs1`/`rs2` (5-bit) fields address the full `x0`–`x31`.
+
+---
+
+## Compressed Instruction Set
+
+Semantic listing of every RV32C/RV64C instruction reflexrv decodes (`rv32imc`/`rv64imac`), grouped by function — mirrors the layout of the [Base Instruction Set](./rv_unprivileged_base_isa_cheatsheet.md#base-instruction-set-rv32i--rv64i) table in the main cheatsheet. `rd'`/`rs1'`/`rs2'` (3-bit) address only `x8`–`x15`; plain `rd`/`rs1`/`rs2` (5-bit) address the full `x0`–`x31`. D/F-extension forms (`c.fld`, `c.flw`, `c.fsd`, `c.fsw`, `c.fldsp`, `c.flwsp`, `c.fsdsp`, `c.fswsp`) are omitted — not emitted for reflexrv's IMC builds.
+
+### Register-Relative Loads / Stores
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.lw` | CL | `rd' = sext(mem32[rs1'+offset])` | `c.lw rd', offset(rs1')` |
+| `c.ld` | CL | `rd' = mem64[rs1'+offset]` | `c.ld rd', offset(rs1')` |
+| `c.sw` | CS | `mem32[rs1'+offset] = rs2'` | `c.sw rs2', offset(rs1')` |
+| `c.sd` | CS | `mem64[rs1'+offset] = rs2'` | `c.sd rs2', offset(rs1')` |
+
+### Stack-Pointer-Relative Loads / Stores
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.lwsp` | CI | `rd = sext(mem32[sp+offset])` | `c.lwsp rd, offset(sp)` |
+| `c.ldsp` | CI | `rd = mem64[sp+offset]` | `c.ldsp rd, offset(sp)` |
+| `c.swsp` | CSS | `mem32[sp+offset] = rs2` | `c.swsp rs2, offset(sp)` |
+| `c.sdsp` | CSS | `mem64[sp+offset] = rs2` | `c.sdsp rs2, offset(sp)` |
+
+### Stack-Pointer / Wide-Immediate Adjustments
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.addi4spn` | CIW | `rd' = sp + nzuimm` | `c.addi4spn rd', nzuimm` |
+| `c.addi16sp` | CI | `sp = sp + nzimm` | `c.addi16sp nzimm` |
+
+### Immediate / Constant-Generation / Shifts
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.addi` | CI | `rd = rd + sext(nzimm)` | `c.addi rd, imm` |
+| `c.addiw` | CI | `rd = sext32(rd + imm)` | `c.addiw rd, imm` |
+| `c.li` | CI | `rd = sext(imm)` | `c.li rd, imm` |
+| `c.lui` | CI | `rd = sext(nzimm << 12)` | `c.lui rd, imm` |
+| `c.slli` | CI | `rd = rd << shamt` | `c.slli rd, shamt` |
+| `c.srli` | CB | `rd' = rd' >>u shamt` | `c.srli rd', shamt` |
+| `c.srai` | CB | `rd' = rd' >>s shamt` | `c.srai rd', shamt` |
+| `c.andi` | CB | `rd' = rd' & sext(imm)` | `c.andi rd', imm` |
+
+### Register-Register Arithmetic / Logic
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.mv` | CR | `rd = rs2` | `c.mv rd, rs2` |
+| `c.add` | CR | `rd = rd + rs2` | `c.add rd, rs2` |
+| `c.sub` | CA | `rd' = rd' - rs2'` | `c.sub rd', rs2'` |
+| `c.xor` | CA | `rd' = rd' ^ rs2'` | `c.xor rd', rs2'` |
+| `c.or` | CA | `rd' = rd' \| rs2'` | `c.or rd', rs2'` |
+| `c.and` | CA | `rd' = rd' & rs2'` | `c.and rd', rs2'` |
+| `c.subw` | CA | `rd' = sext32(rd' - rs2')` | `c.subw rd', rs2'` |
+| `c.addw` | CA | `rd' = sext32(rd' + rs2')` | `c.addw rd', rs2'` |
+
+### Branches (pc-relative)
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.beqz` | CB | `if (rs1' == 0) pc += offset` | `c.beqz rs1', label` |
+| `c.bnez` | CB | `if (rs1' != 0) pc += offset` | `c.bnez rs1', label` |
+
+### Jumps
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.j` | CJ | `pc += offset` | `c.j label` |
+| `c.jal` | CJ | `x1 = pc+2; pc += offset` | `c.jal label` |
+| `c.jr` | CR | `pc = rs1` | `c.jr rs1` |
+| `c.jalr` | CR | `t = pc+2; pc = rs1; x1 = t` | `c.jalr rs1` |
+
+### System
+
+| Mnemonic | Fmt | Operation | Usage |
+|---|---|---|---|
+| `c.nop` | CI | no operation | `c.nop` |
+| `c.ebreak` | CR | trap to debugger | `c.ebreak` |
 
 ---
 
