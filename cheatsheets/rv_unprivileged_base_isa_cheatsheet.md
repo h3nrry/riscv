@@ -74,7 +74,7 @@ Source: [docs.riscv.org — RISC-V Ratified Specifications Library](https://docs
 | `andi` | I | `rd = rs1 & sext(imm)` | |
 | `ori` | I | `rd = rs1 \| sext(imm)` | |
 | `xori` | I | `rd = rs1 ^ sext(imm)` | `xori rd, rs, -1` = bitwise NOT |
-| `sll` | R | `rd = rs1 << rs2[4:0]` (RV32) / `rs2[5:0]` (RV64) | shift amount taken mod XLEN, rest of rs2 ignored |
+| `sll` | R | `rd = rs1 << rs2[4:0]/[5:0]` | shift amount taken mod XLEN, rest of rs2 ignored |
 | `srl` | R | `rd = rs1 >>u rs2[4:0]/[5:0]` | logical (zero-fill) shift |
 | `sra` | R | `rd = rs1 >>s rs2[4:0]/[5:0]` | arithmetic (sign-fill) shift |
 | `slli` | I | `rd = rs1 << shamt` | shift; `shamt`: 5-bit (RV32, 0–31) / 6-bit (RV64, 0–63) — see [RV64I-Specific Encodings](#rv64i-specific-encodings) |
@@ -95,7 +95,7 @@ Source: [docs.riscv.org — RISC-V Ratified Specifications Library](https://docs
 | `slt` | R | `rd = (rs1 < rs2) ? 1 : 0` | signed compare |
 | `sltu` | R | `rd = (rs1 < rs2) ? 1 : 0` | unsigned compare; `sltu rd, x0, rs1` ⇒ `rd = (rs1 != 0)` |
 | `slti` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | signed |
-| `sltiu` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | imm sign-extended first, **then** compared as unsigned; `sltiu rd, rs, 1` ⇒ `rd = (rs == 0)` |
+| `sltiu` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | imm sign-extended first, then compared as unsigned; `sltiu rd, rs, 1` ⇒ `rd = (rs == 0)` |
 
 ### Branches (pc-relative)
 
@@ -143,9 +143,9 @@ Offset range: ±4 KiB (13-bit signed immediate, always even — bit 0 implicit 0
 | `sb` | S | `mem8[rs1+offset] = rs2[7:0]` | |
 | `sh` | S | `mem16[rs1+offset] = rs2[15:0]` | |
 | `sw` | S | `mem32[rs1+offset] = rs2[31:0]` | |
-| `lwu` | I | `rd = zext(mem32[rs1+offset])` | **RV64 only** |
-| `ld` | I | `rd = mem64[rs1+offset]` | **RV64 only**, full 64-bit load |
-| `sd` | S | `mem64[rs1+offset] = rs2` | **RV64 only**, full 64-bit store |
+| `lwu` | I | `rd = zext(mem32[rs1+offset])` | RV64 only |
+| `ld` | I | `rd = mem64[rs1+offset]` | RV64 only, full 64-bit load |
+| `sd` | S | `mem64[rs1+offset] = rs2` | RV64 only, full 64-bit store |
 
 `offset` is a 12-bit signed immediate (−2048..2047 bytes) relative to `rs1`. Misaligned accesses are architecturally permitted but may trap or run slower depending on the implementation — reflexrv should decide (and document) its policy explicitly.
 
@@ -206,7 +206,7 @@ Not real opcodes — the assembler expands these to one or more real instruction
 | `jr` | `jalr x0, rs, 0` | jump to register |
 | `ret` | `jalr x0, ra, 0` | return from subroutine |
 | `call` | `auipc`+`jalr` pair | far call (out of `jal`'s ±1 MiB range), `ra` = return addr |
-| `tail` | `auipc`+`jalr` pair (`rd=x0`) | far tail-call, does **not** save a return address |
+| `tail` | `auipc`+`jalr` pair (`rd=x0`) | far tail-call, does not save a return address |
 
 ---
 
@@ -344,10 +344,10 @@ RV64 reuses every RV32I opcode as-is, plus adds two new opcodes and widens a few
 | 000 | LB / SB | RV32 + RV64 |
 | 001 | LH / SH | RV32 + RV64 |
 | 010 | LW / SW | RV32 + RV64 |
-| 011 | **LD / SD** | **RV64 only** — full 64-bit load/store |
+| 011 | LD / SD | RV64 only — full 64-bit load/store |
 | 100 | LBU | RV32 + RV64 |
 | 101 | LHU | RV32 + RV64 |
-| 110 | **LWU** | **RV64 only** — zero-extends a 32-bit load into 64 bits |
+| 110 | LWU | RV64 only — zero-extends a 32-bit load into 64 bits |
 
 #### Shift-amount width change: SLLI / SRLI / SRAI (opcode OP-IMM, `0010011`)
 
