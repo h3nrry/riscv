@@ -45,7 +45,7 @@ Governs ordinary instruction execution: base integer ISA plus all standard exten
 | BF16 | BFloat16 floating-point | 1.0 | Jun 2024 |
 | Zfa | Additional floating-point instructions | 1.0 | Sep 2023 |
 | Zfinx / Zdinx / Zhinx / Zhinxmin | Floating-point in integer registers | 1.0 | Nov 2021 |
-| **C** | **Compressed instructions** — see `rv_unprivileged_compressed_isa_cheatsheet.md` | 2.0 | — (base ISA) |
+| **C** | **[Compressed instructions](./rv_unprivileged_compressed_isa_cheatsheet.md)** | 2.0 | — (base ISA) |
 | Zc* | Code-size reduction extensions | 1.0.0 | Apr 2023 |
 | B | Bit manipulation | 1.0.0 | Apr 2024 |
 | V | Vector extension | 1.0 | Nov 2021 |
