@@ -1,6 +1,6 @@
 # RISC-V Unprivileged Base ISA Cheatsheet
 
-Quick reference for writing/compiling/inspecting test code for reflexrv (RV32/RV64), scoped to the **RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture** (base integer ISA + M/A/C/F/D extensions — no privileged/CSR-mode content).
+Quick reference for the RV32I / RV64I **base integer ISA** — registers, instructions, and their bit-level encoding. Scoped strictly to the base ISA; extensions, toolchain flags, and build/debug commands live in [`README.md`](./README.md) instead.
 
 Companion file: [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) — covers `inst[1:0] = 00 / 01 / 10` (16-bit compressed / C extension) in full detail.
 
@@ -12,32 +12,22 @@ Companion file: [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileg
 - [Registers (ABI names)](#registers-abi-names)
 - [Base Instruction Set (RV32I / RV64I)](#base-instruction-set-rv32i--rv64i)
 - [Instruction Encoding](#instruction-encoding)
-- [Common Extensions](#common-extensions)
-- [ABI / Width Naming](#abi--width-naming)
-- [GCC Compile Flags](#gcc-compile-flags)
-- [Binutils — Inspecting Output](#binutils--inspecting-output)
-- [GDB (with Spike or your simulator as target)](#gdb-with-spike-or-your-simulator-as-target)
-- [Minimal Bare-Metal Test Pattern](#minimal-bare-metal-test-pattern)
-- [Quick Reference Links](#quick-reference-links)
 - [Compressed Instructions (separate file →)](./rv_unprivileged_compressed_isa_cheatsheet.md)
+- [Extensions, Toolchain & Build Reference (README →)](./README.md)
 
 ---
 
 ## Specification Version
 
-This cheatsheet reflects the current **RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture**:
+This cheatsheet reflects the current **RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture**, base integer ISA chapters only:
 
 | Item | Version |
 |---|---|
 | Unprivileged ISA (overall release) | **20260120** (official release) |
 | RV32I Base Integer ISA | 2.1 |
 | RV64I Base Integer ISA | 2.1 |
-| "M" Extension (mul/div) | 2.0 |
-| "A" Extension (atomics) | 2.1 |
-| "C" Extension (compressed) | 2.0 |
-| "F" / "D" Extensions (float) | 2.2 |
 
-Source: [docs.riscv.org — RISC-V Ratified Specifications Library](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html). The base integer/compressed/M/A encodings covered in this doc are foundational and effectively unchanged across recent spec revisions — safe to treat as stable even as newer point releases ship.
+Source: [docs.riscv.org — RISC-V Ratified Specifications Library](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html). Extension versions (M/A/C/F/D and beyond) are listed in `README.md`.
 
 ---
 
@@ -339,119 +329,9 @@ Whereas [bits [1:0] = 11](#official-base-opcode-map-inst10--11-ie-all-32-bit-ins
 
 ---
 
-## Common Extensions
+## See Also
 
-| Ext | Adds |
-|-----|------|
-| **M** | Integer multiply/divide: `mul`, `mulh`, `div`, `rem`, ... |
-| **A** | Atomics: `lr.w`, `sc.w`, `amoadd.w`, `amoswap.w`, ... |
-| **C** | Compressed 16-bit instructions (smaller code size) |
-| **F** | Single-precision float |
-| **D** | Double-precision float |
-
-Common combos: `rv32imc` (embedded, no FP), `rv64imac` (embedded, atomics, no FP), `rv64imafd` / `rv64gc` (general purpose, `g` = imafd).
-
----
-
-## ABI / Width Naming
-
-| march | mabi | Meaning |
-|-------|------|---------|
-| rv32imc | ilp32 | 32-bit, int/long/pointer = 32-bit |
-| rv32imac | ilp32 | 32-bit + atomics |
-| rv64imac | lp64 | 64-bit, long/pointer = 64-bit, int = 32-bit |
-| rv64imafdc | lp64d | 64-bit + hardware float |
-| rv64gc | lp64d | 64-bit general purpose (imafdc) |
-
----
-
-## GCC Compile Flags
-
-```bash
-# RV32
-riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 -nostartfiles -o out32.elf in.c
-
-# RV64
-riscv-none-elf-gcc -march=rv64imac -mabi=lp64 -nostartfiles -o out64.elf in.c
-
-# Common extras
--nostartfiles      # skip C runtime startup (bare metal)
--nostdlib           # skip standard lib + startup entirely
--ffreestanding       # no hosted environment assumptions
--static              # avoid dynamic linking
--O0 / -O2            # optimization level (O0 = easiest to read in disassembly)
--g                    # debug symbols
--T linker.ld          # custom linker script (bare-metal memory layout)
--Wl,-Map=out.map      # emit linker map
-```
-
----
-
-## Binutils — Inspecting Output
-
-```bash
-# Disassemble
-riscv-none-elf-objdump -d out.elf
-riscv-none-elf-objdump -dS out.elf        # interleave source
-
-# ELF -> hex (for simulation / memory init)
-riscv-none-elf-objcopy -O verilog out.elf out.hex
-riscv-none-elf-objcopy -O binary  out.elf out.bin
-riscv-none-elf-objcopy -O ihex    out.elf out.ihex
-
-# Inspect sections / symbols
-riscv-none-elf-readelf -h out.elf     # ELF header
-riscv-none-elf-readelf -S out.elf     # section headers
-riscv-none-elf-nm out.elf              # symbol table
-riscv-none-elf-size out.elf            # text/data/bss sizes
-
-# Check supported multilib combos
-riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 --print-multi-lib
-```
-
----
-
-## GDB (with Spike or your simulator as target)
-
-```bash
-riscv-none-elf-gdb out.elf
-(gdb) target remote :1234       # connect to simulator/gdbserver
-(gdb) break main
-(gdb) continue
-(gdb) stepi                      # single instruction step
-(gdb) info registers
-(gdb) x/10i $pc                  # examine next 10 instructions at pc
-(gdb) x/4xw $sp                  # examine 4 words at stack pointer, hex
-```
-
----
-
-## Minimal Bare-Metal Test Pattern
-
-```asm
-.section .text
-.global _start
-_start:
-    li   x1, 5
-    li   x2, 10
-    add  x3, x1, x2      # x3 = 15
-1:
-    j    1b               # infinite loop (halt)
-```
-
-```bash
-riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 -nostartfiles -o test.elf test.S
-riscv-none-elf-objdump -d test.elf
-```
-
----
-
-## Quick Reference Links
-
-- [RISC-V ISA Manual (unpriv + priv specs)](https://riscv.org/technical/specifications/)
-- [RISC-V ABI spec](https://github.com/riscv-non-isa/riscv-elf-psabi-doc)
-- [riscv-tests](https://github.com/riscv-software-src/riscv-tests)
-- [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test)
+- [`README.md`](./README.md) — extension lists (Unprivileged + Privileged), ABI/width naming, GCC compile flags, binutils/GDB commands, and the minimal bare-metal test pattern
 - [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) — companion file, C extension (`inst[1:0]` = 00/01/10) encoding detail
 
 ---

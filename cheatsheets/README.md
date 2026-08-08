@@ -10,7 +10,7 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
 
 | File | Covers |
 |---|---|
-| [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) | RV32I/RV64I base ISA — registers, instructions, `inst[1:0] = 11` encodings, GCC/binutils/GDB usage |
+| [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) | RV32I/RV64I base ISA only — registers, instructions, `inst[1:0] = 11` encodings |
 | [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) | C extension — `inst[1:0] = 00 / 01 / 10` compressed instruction encodings |
 
 Privileged-architecture cheatsheets (CSRs, trap handling, virtual memory, etc.) are not yet written — the extension list below is a reference/roadmap for when those are added.
@@ -101,11 +101,115 @@ Address-translation schemes and their supporting extensions, defined within the 
 
 ---
 
+## Extensions, Toolchain & Build Reference
+
+Moved here from `rv_unprivileged_base_isa_cheatsheet.md` so that file stays scoped to the base ISA only.
+
+### Common Extensions (reflexrv-relevant)
+
+| Ext | Adds |
+|-----|------|
+| **M** | Integer multiply/divide: `mul`, `mulh`, `div`, `rem`, ... |
+| **A** | Atomics: `lr.w`, `sc.w`, `amoadd.w`, `amoswap.w`, ... |
+| **C** | Compressed 16-bit instructions (smaller code size) |
+| **F** | Single-precision float |
+| **D** | Double-precision float |
+
+Common combos: `rv32imc` (embedded, no FP), `rv64imac` (embedded, atomics, no FP), `rv64imafd` / `rv64gc` (general purpose, `g` = imafd).
+
+### ABI / Width Naming
+
+| march | mabi | Meaning |
+|-------|------|---------|
+| rv32imc | ilp32 | 32-bit, int/long/pointer = 32-bit |
+| rv32imac | ilp32 | 32-bit + atomics |
+| rv64imac | lp64 | 64-bit, long/pointer = 64-bit, int = 32-bit |
+| rv64imafdc | lp64d | 64-bit + hardware float |
+| rv64gc | lp64d | 64-bit general purpose (imafdc) |
+
+### GCC Compile Flags
+
+```bash
+# RV32
+riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 -nostartfiles -o out32.elf in.c
+
+# RV64
+riscv-none-elf-gcc -march=rv64imac -mabi=lp64 -nostartfiles -o out64.elf in.c
+
+# Common extras
+-nostartfiles      # skip C runtime startup (bare metal)
+-nostdlib           # skip standard lib + startup entirely
+-ffreestanding       # no hosted environment assumptions
+-static              # avoid dynamic linking
+-O0 / -O2            # optimization level (O0 = easiest to read in disassembly)
+-g                    # debug symbols
+-T linker.ld          # custom linker script (bare-metal memory layout)
+-Wl,-Map=out.map      # emit linker map
+```
+
+### Binutils — Inspecting Output
+
+```bash
+# Disassemble
+riscv-none-elf-objdump -d out.elf
+riscv-none-elf-objdump -dS out.elf        # interleave source
+
+# ELF -> hex (for simulation / memory init)
+riscv-none-elf-objcopy -O verilog out.elf out.hex
+riscv-none-elf-objcopy -O binary  out.elf out.bin
+riscv-none-elf-objcopy -O ihex    out.elf out.ihex
+
+# Inspect sections / symbols
+riscv-none-elf-readelf -h out.elf     # ELF header
+riscv-none-elf-readelf -S out.elf     # section headers
+riscv-none-elf-nm out.elf              # symbol table
+riscv-none-elf-size out.elf            # text/data/bss sizes
+
+# Check supported multilib combos
+riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 --print-multi-lib
+```
+
+### GDB (with Spike or your simulator as target)
+
+```bash
+riscv-none-elf-gdb out.elf
+(gdb) target remote :1234       # connect to simulator/gdbserver
+(gdb) break main
+(gdb) continue
+(gdb) stepi                      # single instruction step
+(gdb) info registers
+(gdb) x/10i $pc                  # examine next 10 instructions at pc
+(gdb) x/4xw $sp                  # examine 4 words at stack pointer, hex
+```
+
+### Minimal Bare-Metal Test Pattern
+
+```asm
+.section .text
+.global _start
+_start:
+    li   x1, 5
+    li   x2, 10
+    add  x3, x1, x2      # x3 = 15
+1:
+    j    1b               # infinite loop (halt)
+```
+
+```bash
+riscv-none-elf-gcc -march=rv32imc -mabi=ilp32 -nostartfiles -o test.elf test.S
+riscv-none-elf-objdump -d test.elf
+```
+
+---
+
 ## Spec Sources
 
 - [Unprivileged ISA, v20260120](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html)
 - [Privileged Architecture, v20260120](https://docs.riscv.org/reference/isa/v20260120/priv/priv-index.html)
 - [RISC-V Ratified Specifications Library](https://docs.riscv.org/reference/home/index.html)
+- [RISC-V ABI spec](https://github.com/riscv-non-isa/riscv-elf-psabi-doc)
+- [riscv-tests](https://github.com/riscv-software-src/riscv-tests)
+- [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test)
 
 ---
 
