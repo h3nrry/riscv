@@ -58,43 +58,43 @@ Source: [docs.riscv.org — RISC-V Ratified Specifications Library](https://docs
 
 | Mnemonic | Fmt | Operation | Notes |
 |---|---|---|---|
-| `add` | R | `rd = rs1 + rs2` | overflow silently wraps (no flags) |
-| `sub` | R | `rd = rs1 - rs2` | |
-| `addi` | I | `rd = rs1 + sext(imm)` | `imm`: 12-bit signed, −2048..2047 |
-| `and` | R | `rd = rs1 & rs2` | |
-| `or` | R | `rd = rs1 \| rs2` | |
-| `xor` | R | `rd = rs1 ^ rs2` | |
-| `andi` | I | `rd = rs1 & sext(imm)` | |
-| `ori` | I | `rd = rs1 \| sext(imm)` | |
-| `xori` | I | `rd = rs1 ^ sext(imm)` | `xori rd, rs, -1` = bitwise NOT |
-| `sll` | R | `rd = rs1 << rs2[4:0]` (RV32) / `rs2[5:0]` (RV64) | shift amount taken mod XLEN, rest of rs2 ignored |
-| `srl` | R | `rd = rs1 >>u rs2[4:0]/[5:0]` | logical (zero-fill) shift |
-| `sra` | R | `rd = rs1 >>s rs2[4:0]/[5:0]` | arithmetic (sign-fill) shift |
-| `slli` | I (shift) | `rd = rs1 << shamt` | `shamt`: 5-bit (RV32, 0–31) / 6-bit (RV64, 0–63) — see [RV64I-Specific Encodings](#rv64i-specific-encodings) |
-| `srli` | I (shift) | `rd = rs1 >>u shamt` | |
-| `srai` | I (shift) | `rd = rs1 >>s shamt` | |
-| `lui` | U | `rd = imm << 12` | `imm`: 20-bit; sets bits [31:12], clears [11:0] |
-| `auipc` | U | `rd = pc + (imm << 12)` | standard idiom for building PC-relative addresses (paired with `jalr`/load/store) |
+| `add rd, rs1, rs2` | R | `rd = rs1 + rs2` | overflow silently wraps (no flags) |
+| `sub rd, rs1, rs2` | R | `rd = rs1 - rs2` | |
+| `addi rd, rs1, imm` | I | `rd = rs1 + sext(imm)` | `imm`: 12-bit signed, −2048..2047 |
+| `and rd, rs1, rs2` | R | `rd = rs1 & rs2` | |
+| `or rd, rs1, rs2` | R | `rd = rs1 \| rs2` | |
+| `xor rd, rs1, rs2` | R | `rd = rs1 ^ rs2` | |
+| `andi rd, rs1, imm` | I | `rd = rs1 & sext(imm)` | |
+| `ori rd, rs1, imm` | I | `rd = rs1 \| sext(imm)` | |
+| `xori rd, rs1, imm` | I | `rd = rs1 ^ sext(imm)` | `xori rd, rs, -1` = bitwise NOT |
+| `sll rd, rs1, rs2` | R | `rd = rs1 << rs2[4:0]` (RV32) / `rs2[5:0]` (RV64) | shift amount taken mod XLEN, rest of rs2 ignored |
+| `srl rd, rs1, rs2` | R | `rd = rs1 >>u rs2[4:0]/[5:0]` | logical (zero-fill) shift |
+| `sra rd, rs1, rs2` | R | `rd = rs1 >>s rs2[4:0]/[5:0]` | arithmetic (sign-fill) shift |
+| `slli rd, rs1, shamt` | I (shift) | `rd = rs1 << shamt` | `shamt`: 5-bit (RV32, 0–31) / 6-bit (RV64, 0–63) — see [RV64I-Specific Encodings](#rv64i-specific-encodings) |
+| `srli rd, rs1, shamt` | I (shift) | `rd = rs1 >>u shamt` | |
+| `srai rd, rs1, shamt` | I (shift) | `rd = rs1 >>s shamt` | |
+| `lui rd, imm` | U | `rd = imm << 12` | `imm`: 20-bit; sets bits [31:12], clears [11:0] |
+| `auipc rd, imm` | U | `rd = pc + (imm << 12)` | standard idiom for building PC-relative addresses (paired with `jalr`/load/store) |
 
 ### Comparison
 
 | Mnemonic | Fmt | Operation | Notes |
 |---|---|---|---|
-| `slt` | R | `rd = (rs1 < rs2) ? 1 : 0` | signed compare |
-| `sltu` | R | `rd = (rs1 < rs2) ? 1 : 0` | unsigned compare; `sltu rd, x0, rs1` ⇒ `rd = (rs1 != 0)` |
-| `slti` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | signed |
-| `sltiu` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | imm sign-extended first, **then** compared as unsigned; `sltiu rd, rs, 1` ⇒ `rd = (rs == 0)` |
+| `slt rd, rs1, rs2` | R | `rd = (rs1 < rs2) ? 1 : 0` | signed compare |
+| `sltu rd, rs1, rs2` | R | `rd = (rs1 < rs2) ? 1 : 0` | unsigned compare; `sltu rd, x0, rs1` ⇒ `rd = (rs1 != 0)` |
+| `slti rd, rs1, imm` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | signed |
+| `sltiu rd, rs1, imm` | I | `rd = (rs1 < sext(imm)) ? 1 : 0` | imm sign-extended first, **then** compared as unsigned; `sltiu rd, rs, 1` ⇒ `rd = (rs == 0)` |
 
 ### Branches (pc-relative)
 
 | Mnemonic | Fmt | Operation | Notes |
 |---|---|---|---|
-| `beq` | B | `if (rs1 == rs2) pc += offset` | |
-| `bne` | B | `if (rs1 != rs2) pc += offset` | |
-| `blt` | B | `if (rs1 < rs2) pc += offset` | signed |
-| `bge` | B | `if (rs1 >= rs2) pc += offset` | signed |
-| `bltu` | B | `if (rs1 < rs2) pc += offset` | unsigned |
-| `bgeu` | B | `if (rs1 >= rs2) pc += offset` | unsigned |
+| `beq rs1, rs2, label` | B | `if (rs1 == rs2) pc += offset` | |
+| `bne rs1, rs2, label` | B | `if (rs1 != rs2) pc += offset` | |
+| `blt rs1, rs2, label` | B | `if (rs1 < rs2) pc += offset` | signed |
+| `bge rs1, rs2, label` | B | `if (rs1 >= rs2) pc += offset` | signed |
+| `bltu rs1, rs2, label` | B | `if (rs1 < rs2) pc += offset` | unsigned |
+| `bgeu rs1, rs2, label` | B | `if (rs1 >= rs2) pc += offset` | unsigned |
 
 Offset range: ±4 KiB (13-bit signed immediate, always even — bit 0 implicit 0). There's no `bgt`/`ble` hardware opcode; the assembler synthesizes them by swapping `rs1`/`rs2` on `blt`/`bge` (see [Pseudo-Instructions](#pseudo-instructions) below).
 
@@ -102,24 +102,24 @@ Offset range: ±4 KiB (13-bit signed immediate, always even — bit 0 implicit 0
 
 | Mnemonic | Fmt | Operation | Notes |
 |---|---|---|---|
-| `jal` | J | `rd = pc+4; pc += offset` | offset range ±1 MiB (21-bit signed, bit 0 implicit 0) |
-| `jalr` | I | `t = pc+4; pc = (rs1 + sext(imm)) & ~1; rd = t` | target's bit 0 is always cleared, even if the sum is odd |
+| `jal rd, label` | J | `rd = pc+4; pc += offset` | offset range ±1 MiB (21-bit signed, bit 0 implicit 0) |
+| `jalr rd, rs1, imm` | I | `t = pc+4; pc = (rs1 + sext(imm)) & ~1; rd = t` | target's bit 0 is always cleared, even if the sum is odd |
 
 ### Loads / Stores
 
 | Mnemonic | Fmt | Operation | Notes |
 |---|---|---|---|
-| `lb` | I | `rd = sext(mem8[rs1+offset])` | sign-extended byte load |
-| `lh` | I | `rd = sext(mem16[rs1+offset])` | sign-extended halfword load |
-| `lw` | I | `rd = sext(mem32[rs1+offset])` | sign-extended on RV64; exact on RV32 |
-| `lbu` | I | `rd = zext(mem8[rs1+offset])` | zero-extended byte load |
-| `lhu` | I | `rd = zext(mem16[rs1+offset])` | zero-extended halfword load |
-| `sb` | S | `mem8[rs1+offset] = rs2[7:0]` | |
-| `sh` | S | `mem16[rs1+offset] = rs2[15:0]` | |
-| `sw` | S | `mem32[rs1+offset] = rs2[31:0]` | |
-| `lwu` | I | `rd = zext(mem32[rs1+offset])` | **RV64 only** |
-| `ld` | I | `rd = mem64[rs1+offset]` | **RV64 only**, full 64-bit load |
-| `sd` | S | `mem64[rs1+offset] = rs2` | **RV64 only**, full 64-bit store |
+| `lb rd, offset(rs1)` | I | `rd = sext(mem8[rs1+offset])` | sign-extended byte load |
+| `lh rd, offset(rs1)` | I | `rd = sext(mem16[rs1+offset])` | sign-extended halfword load |
+| `lw rd, offset(rs1)` | I | `rd = sext(mem32[rs1+offset])` | sign-extended on RV64; exact on RV32 |
+| `lbu rd, offset(rs1)` | I | `rd = zext(mem8[rs1+offset])` | zero-extended byte load |
+| `lhu rd, offset(rs1)` | I | `rd = zext(mem16[rs1+offset])` | zero-extended halfword load |
+| `sb rs2, offset(rs1)` | S | `mem8[rs1+offset] = rs2[7:0]` | |
+| `sh rs2, offset(rs1)` | S | `mem16[rs1+offset] = rs2[15:0]` | |
+| `sw rs2, offset(rs1)` | S | `mem32[rs1+offset] = rs2[31:0]` | |
+| `lwu rd, offset(rs1)` | I | `rd = zext(mem32[rs1+offset])` | **RV64 only** |
+| `ld rd, offset(rs1)` | I | `rd = mem64[rs1+offset]` | **RV64 only**, full 64-bit load |
+| `sd rs2, offset(rs1)` | S | `mem64[rs1+offset] = rs2` | **RV64 only**, full 64-bit store |
 
 `offset` is a 12-bit signed immediate (−2048..2047 bytes) relative to `rs1`. Misaligned accesses are architecturally permitted but may trap or run slower depending on the implementation — reflexrv should decide (and document) its policy explicitly.
 
@@ -129,10 +129,10 @@ Offset range: ±4 KiB (13-bit signed immediate, always even — bit 0 implicit 0
 |---|---|---|---|
 | `ecall` | I (SYSTEM) | trap into the execution environment | syscall / OS or firmware call |
 | `ebreak` | I (SYSTEM) | trap to debugger | breakpoint |
-| `fence` | I (MISC-MEM) | orders device I/O and memory accesses | `pred`/`succ` operands = subsets of `{i,o,r,w}`; base ISA — always available |
+| `fence pred, succ` | I (MISC-MEM) | orders device I/O and memory accesses | `pred`/`succ` operands = subsets of `{i,o,r,w}`; base ISA — always available |
 | `fence.i` | I (MISC-MEM) | synchronizes instruction & data streams | Zifencei ext (bundled with most GCC `-march` strings); needed after self-modifying/JIT code |
-| `csrrw` / `csrrs` / `csrrc` | I (SYSTEM) | atomically read-modify-write a CSR | Zicsr ext; `csrrw` swaps, `csrrs`/`csrrc` set/clear bits via `rs1` as a mask |
-| `csrrwi` / `csrrsi` / `csrrci` | I (SYSTEM) | same, with a 5-bit immediate instead of `rs1` | |
+| `csrrw rd, csr, rs1` / `csrrs rd, csr, rs1` / `csrrc rd, csr, rs1` | I (SYSTEM) | atomically read-modify-write a CSR | Zicsr ext; `csrrw` swaps, `csrrs`/`csrrc` set/clear bits via `rs1` as a mask |
+| `csrrwi rd, csr, imm` / `csrrsi rd, csr, imm` / `csrrci rd, csr, imm` | I (SYSTEM) | same, with a 5-bit immediate instead of `rs1` | |
 
 ### Pseudo-Instructions
 
@@ -141,29 +141,29 @@ Not real opcodes — the assembler expands these to one or more real instruction
 | Pseudo | Expands to | Meaning |
 |---|---|---|
 | `nop` | `addi x0, x0, 0` | do nothing |
-| `li` | `addi` alone, or `lui`+`addi` | load an arbitrary constant |
-| `mv` | `addi rd, rs, 0` | register copy |
-| `not` | `xori rd, rs, -1` | bitwise NOT |
-| `neg` | `sub rd, x0, rs` | arithmetic negate |
-| `seqz` | `sltiu rd, rs, 1` | `rd = (rs == 0)` |
-| `snez` | `sltu rd, x0, rs` | `rd = (rs != 0)` |
-| `sltz` | `slt rd, rs, x0` | `rd = (rs < 0)` |
-| `sgtz` | `slt rd, x0, rs` | `rd = (rs > 0)` |
-| `beqz` | `beq rs, x0, label` | branch if zero |
-| `bnez` | `bne rs, x0, label` | branch if not zero |
-| `blez` | `bge x0, rs, label` | branch if ≤ 0 |
-| `bgez` | `bge rs, x0, label` | branch if ≥ 0 |
-| `bltz` | `blt rs, x0, label` | branch if < 0 |
-| `bgtz` | `blt x0, rs, label` | branch if > 0 |
-| `bgt` | `blt rt, rs, label` | operands swapped |
-| `ble` | `bge rt, rs, label` | operands swapped |
-| `bgtu` | `bltu rt, rs, label` | operands swapped |
-| `bleu` | `bgeu rt, rs, label` | operands swapped |
-| `j` | `jal x0, label` | unconditional jump, discard return addr |
-| `jr` | `jalr x0, rs, 0` | jump to register |
+| `li rd, imm` | `addi` alone, or `lui`+`addi` | load an arbitrary constant |
+| `mv rd, rs` | `addi rd, rs, 0` | register copy |
+| `not rd, rs` | `xori rd, rs, -1` | bitwise NOT |
+| `neg rd, rs` | `sub rd, x0, rs` | arithmetic negate |
+| `seqz rd, rs` | `sltiu rd, rs, 1` | `rd = (rs == 0)` |
+| `snez rd, rs` | `sltu rd, x0, rs` | `rd = (rs != 0)` |
+| `sltz rd, rs` | `slt rd, rs, x0` | `rd = (rs < 0)` |
+| `sgtz rd, rs` | `slt rd, x0, rs` | `rd = (rs > 0)` |
+| `beqz rs, label` | `beq rs, x0, label` | branch if zero |
+| `bnez rs, label` | `bne rs, x0, label` | branch if not zero |
+| `blez rs, label` | `bge x0, rs, label` | branch if ≤ 0 |
+| `bgez rs, label` | `bge rs, x0, label` | branch if ≥ 0 |
+| `bltz rs, label` | `blt rs, x0, label` | branch if < 0 |
+| `bgtz rs, label` | `blt x0, rs, label` | branch if > 0 |
+| `bgt rs, rt, label` | `blt rt, rs, label` | operands swapped |
+| `ble rs, rt, label` | `bge rt, rs, label` | operands swapped |
+| `bgtu rs, rt, label` | `bltu rt, rs, label` | operands swapped |
+| `bleu rs, rt, label` | `bgeu rt, rs, label` | operands swapped |
+| `j label` | `jal x0, label` | unconditional jump, discard return addr |
+| `jr rs` | `jalr x0, rs, 0` | jump to register |
 | `ret` | `jalr x0, ra, 0` | return from subroutine |
-| `call` | `auipc`+`jalr` pair | far call (out of `jal`'s ±1 MiB range), `ra` = return addr |
-| `tail` | `auipc`+`jalr` pair (`rd=x0`) | far tail-call, does **not** save a return address |
+| `call label` | `auipc`+`jalr` pair | far call (out of `jal`'s ±1 MiB range), `ra` = return addr |
+| `tail label` | `auipc`+`jalr` pair (`rd=x0`) | far tail-call, does **not** save a return address |
 
 ---
 
@@ -323,9 +323,7 @@ If reflexrv's decoder hard-codes a 5-bit shamt slice for `SLLI`/`SRLI`/`SRAI`, i
 
 Whereas [bits [1:0] = 11](#official-base-opcode-map-inst10--11-ie-all-32-bit-instructions) marks a standard 32-bit+ instruction, the other three `inst[1:0]` values each mark a 16-bit compressed instruction, split into three "quadrants" (C0/C1/C2).
 
-**Full bit-layout diagrams and the complete quadrant/funct3 instruction map have moved to a dedicated companion file:**
-
-[`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md)
+Compressed instructions — see [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) for the full bit-layout diagrams and complete quadrant/funct3 instruction map.
 
 ---
 
