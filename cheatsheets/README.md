@@ -12,8 +12,10 @@ Reflects the current RISC-V ISA Manual release: **20260120** (official release),
 |---|---|
 | [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) | RV32I/RV64I base ISA only — registers, instructions, `inst[1:0] = 11` encodings |
 | [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) | C extension — `inst[1:0] = 00 / 01 / 10` compressed instruction encodings |
+| [`rv_privileged_Smepmp_isa_cheatsheet.md`](./rv_privileged_Smepmp_isa_cheatsheet.md) | Smepmp extension — PMP CSRs, address matching modes, `mseccfg` (MML/MMWP/RLB) access rules |
+| [`rv_privileged_machine_level_isa_cheatsheet.md`](./rv_privileged_machine_level_isa_cheatsheet.md) | Machine-Level ISA — CSR address map, `misa`, `mstatus`, `mtvec`, trap delegation, `mip`/`mie`, `mcause` code table, trap handling flow |
 
-Privileged-architecture cheatsheets (CSRs, trap handling, virtual memory, etc.) are not yet written — the extension list below is a reference/roadmap for when those are added.
+Other privileged-architecture cheatsheets (virtual memory, hypervisor, etc.) are not yet written — the extension list below is a reference/roadmap for when those are added.
 
 ---
 
@@ -65,10 +67,10 @@ Governs machine/supervisor-mode execution: CSRs, traps, interrupts, virtual memo
 | Extension | Description | Version | Ratified |
 |---|---|---|---|
 | — | Control and Status Registers (CSRs) | — | — (base spec) |
-| Machine-Level ISA | Machine-mode (M-mode) architecture | 1.13 | Oct 2024 |
+| **Machine-Level ISA** | **[Machine-mode (M-mode) architecture](./rv_privileged_machine_level_isa_cheatsheet.md)** | 1.13 | Oct 2024 |
 | Smstateen / Ssstateen | State-enable extensions | 1.0 | Nov 2021 |
 | Smcsrind / Sscsrind | Indirect CSR access | 1.0 | Feb 2024 |
-| Smepmp | PMP (physical memory protection) enhancements | 1.0 | Nov 2021 |
+| **Smepmp** | **[PMP (physical memory protection) enhancements](./rv_privileged_Smepmp_isa_cheatsheet.md)** | 1.0 | Nov 2021 |
 | Smcntrpmf | Cycle/instret privilege-mode filtering | 1.0 | Nov 2023 |
 | Smrnmi | Resumable non-maskable interrupts | 1.0 | Jun 2024 |
 | Smcdeleg / Ssccfg | Counter delegation | 1.0 | Mar 2024 |
