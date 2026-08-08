@@ -1,4 +1,4 @@
-# reflexrv — RISC-V GNU Toolchain Setup
+# RISC-V GNU Toolchain Setup
 
 Location in repo: `riscv/doc/toolchain.md`
 Companion script: `riscv/toolchain/setup_toolchain.sh`
