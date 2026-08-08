@@ -1,8 +1,19 @@
 # RISC-V Unprivileged Compressed ISA Cheatsheet
 
-Companion to [`riscv_cheatsheet.md`](./riscv_cheatsheet.md) (the main RISC-V Unprivileged ISA Cheatsheet). This file covers only **`inst[1:0]` = 00 / 01 / 10** — the 16-bit compressed instruction encodings defined by the "C" extension, version 2.0, part of the RISC-V Unprivileged ISA spec (current release [20260120](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html)).
+Companion to [`rv_unprivileged_base_isa_cheatsheet.md`](./rv_unprivileged_base_isa_cheatsheet.md) (the main RISC-V Unprivileged ISA Cheatsheet). This file covers only **`inst[1:0]` = 00 / 01 / 10** — the 16-bit compressed instruction encodings defined by the "C" extension, version 2.0, part of the RISC-V Unprivileged ISA spec (current release [20260120](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html)).
 
-`inst[1:0] = 11` (standard 32-bit+ instructions) is covered in the main cheatsheet's [Official Base Opcode Map](./riscv_cheatsheet.md#official-base-opcode-map-inst10--11-ie-all-32-bit-instructions).
+`inst[1:0] = 11` (standard 32-bit+ instructions) is covered in the main cheatsheet's [Official Base Opcode Map](./rv_unprivileged_base_isa_cheatsheet.md#official-base-opcode-map-inst10--11-ie-all-32-bit-instructions).
+
+---
+
+## Table of Contents
+
+- [Quadrant Overview](#quadrant-overview)
+- [Compressed Opcode Map](#compressed-opcode-map)
+- [Format Bit Layouts](#format-bit-layouts)
+- [Quadrant / funct3 Instruction Map](#quadrant--funct3-instruction-map)
+- [Quick Reference](#quick-reference)
+- [Main cheatsheet (separate file →)](./rv_unprivileged_base_isa_cheatsheet.md)
 
 ---
 
@@ -129,7 +140,7 @@ For reflexrv's `rv32imc`/`rv64imac` builds, the F/D rows (C.FLD, C.FSW, C.FLDSP,
 
 ## Quick Reference
 
-- ⬅ Back to [main cheatsheet](./riscv_cheatsheet.md)
+- ⬅ Back to [main cheatsheet](./rv_unprivileged_base_isa_cheatsheet.md)
 - [ISA manual, Chapter 27 — "C" Extension for Compressed Instructions](https://docs.riscv.org/reference/isa/v20260120/unpriv/c-st-ext.html)
 
 ---

@@ -1,8 +1,8 @@
-# RISC-V Unprivileged ISA Cheatsheet
+# RISC-V Unprivileged Base ISA Cheatsheet
 
 Quick reference for writing/compiling/inspecting test code for reflexrv (RV32/RV64), scoped to the **RISC-V Instruction Set Manual, Volume I: Unprivileged Architecture** (base integer ISA + M/A/C/F/D extensions — no privileged/CSR-mode content).
 
-Companion file: [`riscv_compressed_cheatsheet.md`](./riscv_compressed_cheatsheet.md) — covers `inst[1:0] = 00 / 01 / 10` (16-bit compressed / C extension) in full detail.
+Companion file: [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) — covers `inst[1:0] = 00 / 01 / 10` (16-bit compressed / C extension) in full detail.
 
 ---
 
@@ -19,7 +19,7 @@ Companion file: [`riscv_compressed_cheatsheet.md`](./riscv_compressed_cheatsheet
 - [GDB (with Spike or your simulator as target)](#gdb-with-spike-or-your-simulator-as-target)
 - [Minimal Bare-Metal Test Pattern](#minimal-bare-metal-test-pattern)
 - [Quick Reference Links](#quick-reference-links)
-- [Compressed Instructions (separate file →)](./riscv_compressed_cheatsheet.md)
+- [Compressed Instructions (separate file →)](./rv_unprivileged_compressed_isa_cheatsheet.md)
 
 ---
 
@@ -335,7 +335,7 @@ Whereas [bits [1:0] = 11](#official-base-opcode-map-inst10--11-ie-all-32-bit-ins
 
 **Full bit-layout diagrams and the complete quadrant/funct3 instruction map have moved to a dedicated companion file:**
 
-📄 [`riscv_compressed_cheatsheet.md`](./riscv_compressed_cheatsheet.md)
+📄 [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md)
 
 ---
 
@@ -452,7 +452,7 @@ riscv-none-elf-objdump -d test.elf
 - [RISC-V ABI spec](https://github.com/riscv-non-isa/riscv-elf-psabi-doc)
 - [riscv-tests](https://github.com/riscv-software-src/riscv-tests)
 - [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test)
-- [`riscv_compressed_cheatsheet.md`](./riscv_compressed_cheatsheet.md) — companion file, C extension (`inst[1:0]` = 00/01/10) encoding detail
+- [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md) — companion file, C extension (`inst[1:0]` = 00/01/10) encoding detail
 
 ---
 
