@@ -47,7 +47,7 @@ Governs ordinary instruction execution: base integer ISA plus all standard exten
 
 | Extension | Description | Version | Ratified |
 |---|---|---|---|
-| RV32I / RV64I | Base integer ISA | 2.1 | — (base ISA) |
+| **RV32I / RV64I** | **[Base integer ISA](./rv_unprivileged_base_isa_cheatsheet.md)** | 2.1 | — (base ISA) |
 | RV32E / RV64E | Reduced base integer ISA (embedded) | 2.0 | Jan 2023 |
 | Zifencei | Instruction-fetch fence | 2.0 | — (base ISA) |
 | Zicsr | CSR read/modify-write instructions | 2.0 | — (base ISA) |
