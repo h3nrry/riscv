@@ -335,7 +335,7 @@ Whereas [bits [1:0] = 11](#official-base-opcode-map-inst10--11-ie-all-32-bit-ins
 
 **Full bit-layout diagrams and the complete quadrant/funct3 instruction map have moved to a dedicated companion file:**
 
-📄 [`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md)
+[`rv_unprivileged_compressed_isa_cheatsheet.md`](./rv_unprivileged_compressed_isa_cheatsheet.md)
 
 ---
 
